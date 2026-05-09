@@ -1,0 +1,20 @@
+Number of CUDA devices: 1
+DEVICE0:
+Device  prop.name: NVIDIA A100-SXM4-40GB
+  Compute capability  prop.major: 8, prop.minor: 0
+  Clock rate  prop.clockRate: 1410000
+  Multiprocessor count  prop.multiProcessorCount: 108
+  Total global memory  prop.totalGlobalMem: 42405855232 bytes
+  Total constant memory  prop.totalConstMem: 65536 bytes
+  Shared memory per block  prop.sharedMemPerBlock: 49152 bytes
+  Shared memory per multiprocessor  prop.sharedMemPerMultiprocessor: 167936 bytes
+  Registers per block  prop.regsPerBlock: 65536
+  Registers per multiprocessor  prop.regsPerMultiprocessor: 65536
+  Warp size  prop.warpSize: 32
+  Max threads per block  prop.maxThreadsPerBlock: 1024
+  Max threads per multiprocessor  prop.maxThreadsPerMultiProcessor: 2048
+  Max thread dimensions  prop.maxThreadsDim: (1024, 1024, 64)
+  Max grid dimensions  prop.maxGridSize: (2147483647, 65535, 65535)
+  Concurrent kernels  prop.concurrentKernels: 1
+  Async engine count  prop.asyncEngineCount: 5
+  Kernel execution timeout enabled  prop.kernelExecTimeoutEnabled: 0
