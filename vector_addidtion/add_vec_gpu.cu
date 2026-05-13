@@ -1,4 +1,5 @@
 #include "gpu_utils.h"
+#include <cuda_runtime.h>
 
 __global__ void add_vec_gpu(const float* d_v1, const float* d_v2, float* d_add, int n)
 {
@@ -10,7 +11,7 @@ __global__ void add_vec_gpu(const float* d_v1, const float* d_v2, float* d_add, 
 
 int main( void )
 {
-    const int n = 18;
+    const int n = (33 * 1024);
 
     vector<float> h_v1 = get_random_vector(n);
     vector<float> h_v2 = get_random_vector(n);
@@ -25,9 +26,9 @@ int main( void )
 
     // Transfer data from host to device memory
     HANDLE_ERROR( cudaMemcpy(d_v1, h_v1.data(), sizeof(float) * n, 
-                             cudaMemcpyHostToDevice));
+                             cudaMemcpyHostToDevice) );
     HANDLE_ERROR( cudaMemcpy(d_v2, h_v2.data(), sizeof(float) * n, 
-                             cudaMemcpyHostToDevice));
+                             cudaMemcpyHostToDevice) );
 
     const int threads_per_block = 4;
     const int nr_blocks = (n + threads_per_block - 1) / threads_per_block;
