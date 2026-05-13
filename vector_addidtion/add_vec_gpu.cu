@@ -11,7 +11,7 @@ __global__ void add_vec_gpu(const float* d_v1, const float* d_v2, float* d_add, 
 
 int main( void )
 {
-    const int n = (33 * 1024);
+    const int n = (33 * 1024); 
 
     vector<float> h_v1 = get_random_vector(n);
     vector<float> h_v2 = get_random_vector(n);
