@@ -32,3 +32,5 @@ int main() {
     cout << "max element: " << max_val << " at index: " << max_idx << endl;
     cout << "Execution time " << duration.count() << " milliseconds" << endl;
 }
+
+// Execution time 5317 milliseconds
