@@ -9,7 +9,7 @@ const int threadsPerBlock = 256;
 const int blocksPerGrid = imin( 32, (N+threadsPerBlock-1) / threadsPerBlock);
 
 
-__global__ void square_length(const float *d_v, float *d_partial_sums, int N)
+__global__ void square_length_reduction(const float *d_v, float *d_partial_sums, int N)
 {
     extern __shared__ float cache[];
 
@@ -71,7 +71,7 @@ int main()
                               cudaMemcpyHostToDevice ) );
     
     // Vector length
-    square_length<<< blocksPerGrid, threadsPerBlock, threadsPerBlock * sizeof(float) >>>( d_v, d_partial_sums, N );
+    square_length_reduction<<< blocksPerGrid, threadsPerBlock, threadsPerBlock * sizeof(float) >>>( d_v, d_partial_sums, N );
     HANDLE_ERROR( cudaGetLastError() );
     HANDLE_ERROR( cudaDeviceSynchronize() ); 
 
@@ -94,7 +94,7 @@ int main()
     HANDLE_ERROR( cudaDeviceSynchronize() );
 
     // Legnth of a normalized vector
-    square_length<<< blocksPerGrid, threadsPerBlock, threadsPerBlock * sizeof(float) >>>( d_v, d_partial_sums, N );
+    square_length_reduction<<< blocksPerGrid, threadsPerBlock, threadsPerBlock * sizeof(float) >>>( d_v, d_partial_sums, N );
     HANDLE_ERROR( cudaGetLastError() );
     HANDLE_ERROR( cudaDeviceSynchronize() );
     HANDLE_ERROR( cudaMemcpy( h_partial_sums.data(), 
@@ -119,7 +119,9 @@ int main()
     return 0;
 }
 
-// Execution time 788 milliseconds
+// (CPU) Execution time: 5796 milliseconds 
+// (GPU) Execution time 804 milliseconds
+
 
 
 

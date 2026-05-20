@@ -119,5 +119,6 @@ int main()
 
     return 0;
 }
+// (CPU) Execution time 6552 milliseconds
+// (GPU) Execution time 409 milliseconds
 
-// Execution time 409 milliseconds

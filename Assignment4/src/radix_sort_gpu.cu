@@ -25,6 +25,7 @@ ostream& operator <<(ostream& outStream, const vector<int> v)
     return outStream;
 }
 
+// GPU kernel that builds a histogram for one radix digit
 __global__ void hist(int *data, int *counts, int N, int exp)
 {
     __shared__ int cache[BASE];
@@ -45,19 +46,19 @@ __global__ void hist(int *data, int *counts, int N, int exp)
     for (int i = threadIdx.x; i < BASE; i += blockDim.x)
         atomicAdd(&counts[i], cache[i]);
 }
-
-// FIX: exclusive prefix sum so each bucket's start position is correct
+// Convert bucket counts into starting positions for each
 void scan(int *counts)
 {
     int total = 0;
     for (int i = 0; i < BASE; i++)
     {
         int current = counts[i];
-        counts[i] = total;   // store cumulative sum *before* this bucket
+        counts[i] = total;  
         total += current;
     }
 }
 
+// Redistributes elements into the correct positions
 void distribute_cpu(vector<int>& data, vector<int>& output, int* pos, int N, int exp)
 {
     for (int i = 0; i < N; i++)
@@ -73,6 +74,10 @@ void swap(int*& a, int*& b)
     b = temp;
 }
 
+// For each digit:
+//   1. Compute histogram on GPU
+//   2. Scan histogram on CPU
+//   3. Redistribute elements
 vector<int> radix_sort(vector<int>& h_data, int nr_digits)
 {
     int *d_data, *d_counts;
@@ -92,22 +97,18 @@ vector<int> radix_sort(vector<int>& h_data, int nr_digits)
 
         HANDLE_ERROR( cudaMemset(d_counts, 0, BASE * sizeof(int)) );
 
-        // Histogram on GPU
         hist<<<blocksPerGrid, threadsPerBlock>>>(d_data, d_counts, N, exp);
         HANDLE_ERROR( cudaGetLastError() );
         HANDLE_ERROR( cudaDeviceSynchronize() );
 
-        // Exclusive scan on host
         int h_counts[BASE];
         HANDLE_ERROR( cudaMemcpy(h_counts, d_counts, BASE * sizeof(int),
                                  cudaMemcpyDeviceToHost) );
         scan(h_counts);
 
-        // Distribute on CPU (stable, no race condition)
         distribute_cpu(h_input, h_output, h_counts, N, exp);
 
-        // Swap buffers and sync back to GPU for next histogram pass
-        std::swap(h_input, h_output);
+        swap(h_input, h_output);
         HANDLE_ERROR( cudaMemcpy(d_data, h_input.data(), N * sizeof(int),
                                  cudaMemcpyHostToDevice) );
     }
@@ -120,14 +121,17 @@ vector<int> radix_sort(vector<int>& h_data, int nr_digits)
 int main()
 {
     vector<int> h_v = get_random_vector_int(N);
-    //cout << "Unsorted: " << h_v << endl;
+    cout << "Unsorted: " << h_v << endl;
 
     auto start = high_resolution_clock::now();
     vector<int> h_v_new = radix_sort(h_v, nr_digits);
     auto stop  = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
 
-    //cout << "Sorted: " << h_v_new << endl;
+    cout << "Sorted: " << h_v_new << endl;
     cout << "Execution time " << duration.count() << " milliseconds" << endl;
     return 0;
 }
+
+// (GPU) Execution time 390 milliseconds
+
